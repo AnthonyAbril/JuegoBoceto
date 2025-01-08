@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Basic RPG Levels</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+    }
+    .header {
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+    .header p {
+      margin: 5px;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      padding-top: 60px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(10, 50px);
+      grid-template-rows: repeat(10, 50px);
+      gap: 2px;
+    }
+    .cell {
+      width: 50px;
+      height: 50px;
+      background-color: #ddd;
+      border: 1px solid #aaa;
+    }
+    .player {
+      background-color: #007bff;
+    }
+    .obstacle {
+      background-color: #333;
+    }
+    .controls {
+      margin-top: 20px;
+    }
+    .controls button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 5px;
+    }
+    .controls button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <p>Level: <span id="level-display">1</span></p>
+    <p>Map Coverage: <span id="coverage-display">0%</span></p>
+  </div>
+
+  <div class="container">
+    <div class="grid" id="grid"></div>
+    <div class="controls">
+      <button onclick="moveToEdge(0, -1)">Up</button>
+      <button onclick="moveToEdge(0, 1)">Down</button>
+      <button onclick="moveToEdge(-1, 0)">Left</button>
+      <button onclick="moveToEdge(1, 0)">Right</button>
+      <button onclick="resetLevel()">Restart</button>
+    </div>
+  </div>
+
+  <script>
+    const gridSize = 10;
+    const player = { x: 0, y: 0 };
+    let currentLevel = 0;
+    const levels = [
+      {
+        initialObstacles: [
+          { x: 0, y: 4 },
+          { x: 4, y: 4 },
+          { x: 5, y: 6 },
+          { x: 2, y: 9 },
+          { x: 7, y: 3 }
+        ]
+      },
+      {
+        initialObstacles: [
+          { x: 1, y: 1 },
+          { x: 2, y: 2 },
+          { x: 3, y: 3 },
+          { x: 4, y: 4 },
+          { x: 5, y: 5 }
+        ]
+      }
+    ];
+
+    let obstacles = [];
+
+    const getCurrentLevel = () => levels[currentLevel];
+
+    const isObstacle = (x, y) => {
+      return obstacles.some(obstacle => obstacle.x === x && obstacle.y === y);
+    };
+
+    const addObstacle = (x, y) => {
+      if (!isObstacle(x, y)) {
+        obstacles.push({ x, y });
+      }
+    };
+
+    const resetObstacles = () => {
+      obstacles = [...getCurrentLevel().initialObstacles];
+    };
+
+    const createGrid = () => {
+      const grid = document.getElementById("grid");
+      grid.innerHTML = ""; // Clear the grid
+      for (let y = 0; y < gridSize; y++) {
+        for (let x = 0; x < gridSize; x++) {
+          const cell = document.createElement("div");
+          cell.classList.add("cell");
+          if (x === player.x && y === player.y) {
+            cell.classList.add("player");
+          } else if (isObstacle(x, y)) {
+            cell.classList.add("obstacle");
+          }
+          grid.appendChild(cell);
+        }
+      }
+
+      updateStats();
+      checkLevelCompletion();
+    };
+
+    const moveToEdge = (dx, dy) => {
+      while (true) {
+        const newX = player.x + dx;
+        const newY = player.y + dy;
+        if (
+          newX >= 0 && newX < gridSize &&
+          newY >= 0 && newY < gridSize &&
+          !isObstacle(newX, newY)
+        ) {
+          addObstacle(player.x, player.y); // Convert current position to obstacle
+          player.x = newX;
+          player.y = newY;
+        } else {
+          break;
+        }
+      }
+      addObstacle(player.x, player.y); // Convert final position to obstacle
+      createGrid();
+    };
+
+    const checkLevelCompletion = () => {
+      if (obstacles.length >= gridSize * gridSize - 1) {
+        alert("Level completed!");
+        nextLevel();
+      }
+    };
+
+    const updateStats = () => {
+      const levelDisplay = document.getElementById("level-display");
+      const coverageDisplay = document.getElementById("coverage-display");
+
+      levelDisplay.textContent = currentLevel + 1;
+      const coverage = Math.floor((obstacles.length / (gridSize * gridSize)) * 100);
+      coverageDisplay.textContent = `${coverage}%`;
+    };
+
+    const nextLevel = () => {
+      currentLevel++;
+      if (currentLevel >= levels.length) {
+        alert("Congratulations! You've completed all levels!");
+        currentLevel = 0; // Restart levels
+      }
+      resetLevel();
+    };
+
+    const resetPlayer = () => {
+      player.x = 0;
+      player.y = 0;
+    };
+
+    const resetLevel = () => {
+      resetPlayer();
+      resetObstacles();
+      createGrid();
+    };
+
+    document.addEventListener("keydown", (event) => {
+      switch (event.key) {
+        case "ArrowUp":
+          moveToEdge(0, -1);
+          break;
+        case "ArrowDown":
+          moveToEdge(0, 1);
+          break;
+        case "ArrowLeft":
+          moveToEdge(-1, 0);
+          break;
+        case "ArrowRight":
+          moveToEdge(1, 0);
+          break;
+        case " ": // Space bar
+          resetLevel();
+          break;
+      }
+    });
+
+    resetLevel(); // Initialize the first level
+  </script>
+</body>
+</html>
