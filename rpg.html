@@ -90,30 +90,51 @@
     const gridSize = 10;
     const player = { x: 0, y: 0 };
     let currentLevel = 0;
+
     const levels = [
-      {
-        initialObstacles: [
-          { x: 0, y: 4 },
-          { x: 4, y: 4 },
-          { x: 5, y: 6 },
-          { x: 2, y: 9 },
-          { x: 7, y: 3 }
-        ]
-      },
-      {
-        initialObstacles: [
-          { x: 1, y: 1 },
-          { x: 2, y: 2 },
-          { x: 3, y: 3 },
-          { x: 4, y: 4 },
-          { x: 5, y: 5 }
-        ]
-      }
+      `cccccccccc\n`+
+      `cccccccccc\n`+
+      `cccccccccc\n`+
+      `cccccccccc\n`+
+      `ccoooooocc\n`+
+      `ccgooooocc\n`+
+      `cccccccccc\n`+
+      `cccccccccc\n`+
+      `cccccccccc\n`+
+      `cccccccccc`,
+      
+      `cccccccccc\n`+
+      `cccccccccc\n`+
+      `cccccccccc\n`+
+      `cccccccccc\n`+
+      `ccoooooocc\n`+
+      `ccgooooocc\n`+
+      `cccccccccc\n`+
+      `cccccccccc\n`+
+      `cccccccccc\n`+
+      `cccccccccc`,
     ];
 
     let obstacles = [];
 
-    const getCurrentLevel = () => levels[currentLevel];
+    const parseLevel = (level) => {
+      const initialObstacles = [];
+      let playerStart = { x: 0, y: 0 };
+
+      level.split("\n").forEach((row, y) => {
+        row.split("").forEach((cell, x) => {
+          if (cell === "c") {
+            initialObstacles.push({ x, y });
+          } else if (cell === "g") {
+            playerStart = { x, y };
+          }
+        });
+      });
+
+      return { initialObstacles, playerStart };
+    };
+
+    const getCurrentLevel = () => parseLevel(levels[currentLevel]);
 
     const isObstacle = (x, y) => {
       return obstacles.some(obstacle => obstacle.x === x && obstacle.y === y);
@@ -195,11 +216,13 @@
     };
 
     const resetPlayer = () => {
-      player.x = 0;
-      player.y = 0;
+      const start = getCurrentLevel().playerStart;
+      player.x = start.x;
+      player.y = start.y;
     };
 
     const resetLevel = () => {
+      const levelData = getCurrentLevel();
       resetPlayer();
       resetObstacles();
       createGrid();
