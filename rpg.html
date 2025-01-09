@@ -35,8 +35,6 @@
     }
     .grid {
       display: grid;
-      grid-template-columns: repeat(10, 50px);
-      grid-template-rows: repeat(10, 50px);
       gap: 2px;
     }
     .cell {
@@ -87,9 +85,9 @@
   </div>
 
   <script>
-    const gridSize = 10;
     const player = { x: 0, y: 0 };
-    let currentLevel = 0;
+    let currentLevel = 5;
+    let gridSize = { rows: 0, cols: 0 };
 
     //c=obstaculo, o=espacio, g=inicio
     const levels = [
@@ -105,24 +103,76 @@
       `cccccccccc`,
       
       `cooooooooo\n`+
-      `coccccccoo\n`+
+      `coccccccco\n`+
+      `cocoooocoo\n`+
+      `cococcococ\n`+
+      `cococcococ\n`+
       `cocoooococ\n`+
-      `cococcococ\n`+
-      `cococcococ\n`+
-      `cocooooooc\n`+
-      `coccccccoc\n`+
-      `coccccccoc\n`+
-      `coooooocoo\n`+
+      `cocoocccoc\n`+
+      `cocoocccoc\n`+
+      `cooogoocoo\n`+
       `ccccccoooo`,
+      
+      `ccccccccoo\n`+
+      `cooooooooo\n`+
+      `cooooooooo\n`+
+      `oooccccooo\n`+
+      `ocoooooooo\n`+
+      `oooooooooo\n`+
+      `ooccccccco\n`+
+      `oooooooooo\n`+
+      `gooccccccc\n`+
+      `cccccccccc`,
+
+      //Chatgpt
+      // Nuevo nivel 4
+      `cccccccccc\n`+
+      `cgoooooocc\n`+
+      `coooocoooc\n`+
+      `coooocoooc\n`+
+      `coooocoooc\n`+
+      `coooocoooc\n`+
+      `coooocoooc\n`+
+      `coooocoooc\n`+
+      `cccccccccc\n`+
+      `cccccccccc`,
+
+      // Nuevo nivel 5
+      `cccccccccc\n`+
+      `cgoooooocc\n`+
+      `cooooooocc\n`+
+      `cooooooocc\n`+
+      `cooooooocc\n`+
+      `cooooooocc\n`+
+      `cooooooocc\n`+
+      `ccccccoooc\n`+
+      `ccccccoooc\n`+
+      `cccccccccc`,
+
+      // Nuevo nivel 6
+      `cccccccccc\n`+
+      `cooooooooc\n`+
+      `cooooooooc\n`+
+      `cooooooooc\n`+
+      `cooooooooc\n`+
+      `cooogooooo\n`+
+      `cooooooooc\n`+
+      `cooooooooc\n`+
+      `cooooooooc\n`+
+      `cccccccccc`
     ];
+
 
     let obstacles = [];
 
     const parseLevel = (level) => {
       const initialObstacles = [];
       let playerStart = { x: 0, y: 0 };
+      const rows = level.split("\n");
+      gridSize.rows = rows.length;
+      gridSize.cols = rows[0].length;
 
-      level.split("\n").forEach((row, y) => {
+      rows.forEach((row, y) => {
         row.split("").forEach((cell, x) => {
           if (cell === "c") {
             initialObstacles.push({ x, y });
@@ -154,8 +204,11 @@
     const createGrid = () => {
       const grid = document.getElementById("grid");
       grid.innerHTML = ""; // Clear the grid
-      for (let y = 0; y < gridSize; y++) {
-        for (let x = 0; x < gridSize; x++) {
+      grid.style.gridTemplateColumns = `repeat(${gridSize.cols}, 50px)`;
+      grid.style.gridTemplateRows = `repeat(${gridSize.rows}, 50px)`;
+
+      for (let y = 0; y < gridSize.rows; y++) {
+        for (let x = 0; x < gridSize.cols; x++) {
           const cell = document.createElement("div");
           cell.classList.add("cell");
           if (x === player.x && y === player.y) {
@@ -176,8 +229,8 @@
         const newX = player.x + dx;
         const newY = player.y + dy;
         if (
-          newX >= 0 && newX < gridSize &&
-          newY >= 0 && newY < gridSize &&
+          newX >= 0 && newX < gridSize.cols &&
+          newY >= 0 && newY < gridSize.rows &&
           !isObstacle(newX, newY)
         ) {
           addObstacle(player.x, player.y); // Convert current position to obstacle
@@ -192,7 +245,7 @@
     };
 
     const checkLevelCompletion = () => {
-      if (obstacles.length >= gridSize * gridSize - 1) {
+      if (obstacles.length >= gridSize.rows * gridSize.cols - 1) {
         alert("Level completed!");
         nextLevel();
       }
@@ -203,7 +256,7 @@
       const coverageDisplay = document.getElementById("coverage-display");
 
       levelDisplay.textContent = currentLevel + 1;
-      const coverage = Math.floor((obstacles.length / (gridSize * gridSize)) * 100);
+      const coverage = Math.floor((obstacles.length / (gridSize.rows * gridSize.cols)) * 100);
       coverageDisplay.textContent = `${coverage}%`;
     };
 
